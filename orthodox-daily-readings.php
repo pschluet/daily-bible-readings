@@ -5,6 +5,8 @@ Plugin URI: http://paulschlueter.com
 Description: This plugin allows you to post the current day's readings and fasting rule from antiochian.org on your own website.
 Author: Paul Schlueter
 Version: 1.0.0
+License: GPL2
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Author URI: http://paulschlueter.com
 */
 
