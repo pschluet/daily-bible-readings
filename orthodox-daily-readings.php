@@ -15,41 +15,74 @@ Author URI: http://paulschlueter.com
  */
 class ODR_Reading {
 	private $title;
-	private $text;
+	private $shortText;
+	private $fullText;
 
-	public function __construct(string $title, string $text) {
+	/**
+	 * Constructor
+	 * @param string $title the title for the reading
+	 * @param string $shortText the preview text for the reading
+	 * @param string $fullText the full text of the reading
+	 * @return ODR_Reading
+	 */
+	public function __construct(string $title, string $shortText, string $fullText) {
 		$this->title = $title;
-		$this->text = $text;
+		$this->shortText = $shortText;
+		$this->fullText = $fullText;
 	}
 
-	public function get_text() {
-		return $this->text;
+	public function get_full_text() {
+		return $this->fullText;
 	}
 
 	public function get_title() {
 		return $this->title;
+	}
+
+	public function get_short_text() {
+		return $this->shortText;
 	}
 }
 
 /**
  * Class to hold all of the readings data
  */
-class ODR_ReadingsData {
+class ODR_ReadingsDataModel {
 	private $date;
 	private $readings;
 	private $fastingText;
 
 	/**
 	 * Constructor
-	 * @param string $date the date for these readings
-	 * @param array $readings an array of ODR_Reading objects (the actual readings)
-	 * @param string $fastingText the text with the fasting rule for the day
-	 * @return ODR_ReadingsData
 	 */
-	public function __construct(string $date, array $readings, string $fastingText) {
-		$this->date = $date;
-		$this->readings = $readings;
-		$this->fastingText = $fastingText;
+	public function __construct() {
+	}
+
+	public function get_date() {
+		$this->refresh_data();
+		return $this->date;
+	}
+
+	public function set_date($value) {
+		$this->date = $value;
+	}
+
+	public function get_readings() {
+		$this->refresh_data();
+		return $this->readings;
+	}
+
+	public function set_readings($value) {
+		$this->readings = $value;
+	}
+
+	public function get_fasting_text() {
+		$this->refresh_data();
+		return $this->fastingText;
+	}
+
+	public function set_fasting_text($value) {
+		$this->fastingText = $value;
 	}
 }
 
@@ -77,18 +110,82 @@ class ODR_ActivationHandler {
 	}
 }
 
-// function odr_links() {
-// 	echo "<div>These are the links.</div>";
-// }
+/**
+ * Handles display of the readings via shortlink
+ */
+class ODR_View {
+	/**
+	 * Constructor
+	 * @return ODR_View the view
+	 */
+	public function __construct() {
 
-// add_shortcode('daily_readings_links', 'odr_links');
+		// Register shortcodes
+		add_shortcode('daily_readings_teaser', array($this, 'get_teaser_display'));
+		add_shortcode('daily_readings_full', array($this, 'get_full_display'));
+	}
 
-// function odr_page() {
-// 	echo "<div>This is the page.</div>";
-// }
+	public function get_teaser_display() {
+		$data = ODR_DataSourceInterface::get_data();
 
-// add_shortcode('daily_readings_page', 'odr_page');
+		echo "<div>" . $data->get_date() . "</div>" .
+		     "<div>" . $data->get_fasting_text() . "</div>";
+
+		foreach ($data->get_readings() as $reading) {
+			echo "<div>" . $reading->get_title() . "</div>" .
+			     "<div>" . $reading->get_short_text() . "</div>";
+		}
+	}
+
+	public function get_full_display() {
+		$data = ODR_DataSourceInterface::get_data();
+
+		echo "<div>" . $data->get_date() . "</div>" .
+		     "<div>" . $data->get_fasting_text() . "</div>";
+
+		foreach ($data->get_readings() as $reading) {
+			echo "<div>" . $reading->get_title() . "</div>" .
+			     "<div>" . $reading->get_full_text() . "</div>";
+		}
+	}
+}
+
+/** 
+ * Interfaces with antiochian.org to get the reading data
+ */
+class ODR_DataSourceInterface {
+	private const DATA_SOURCE_URL = "http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicalDaysRss";
+
+	public static function get_data() {
+		$readings = array(new ODR_Reading("title1", "shortText1", "fullText1"),
+			new ODR_Reading("title2", "shortText2", "fullText2"),
+			new ODR_Reading("title3", "shortText3", "fullText3"));
+
+		$out = new ODR_ReadingsDataModel();
+
+		$xml = simplexml_load_string(ODR_DataSourceInterface::get_data_from_source());
+		$item = $xml->channel->item;
+
+		$out->set_date($item->title);
+		$out->set_fasting_text($item->FastDesignation);
+		$out->set_readings($readings);
+
+		return $out;
+	}
+
+	private static function get_data_from_source() {
+		$curl = curl_init();
+    	curl_setopt($curl, CURLOPT_URL, ODR_DataSourceInterface::DATA_SOURCE_URL);
+    	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    	$data = curl_exec($curl);
+    	curl_close($curl);
+    	return $data;
+	}
+}
 
 // Instantiate the activation/deactivation handler
 $activator = new ODR_ActivationHandler();
+
+// Instantiate the view
+$view = new ODR_View();
 ?>
