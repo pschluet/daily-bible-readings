@@ -59,7 +59,6 @@ class ODR_ReadingsDataModel {
 	}
 
 	public function get_date() {
-		$this->refresh_data();
 		return $this->date;
 	}
 
@@ -68,7 +67,6 @@ class ODR_ReadingsDataModel {
 	}
 
 	public function get_readings() {
-		$this->refresh_data();
 		return $this->readings;
 	}
 
@@ -77,7 +75,6 @@ class ODR_ReadingsDataModel {
 	}
 
 	public function get_fasting_text() {
-		$this->refresh_data();
 		return $this->fastingText;
 	}
 
