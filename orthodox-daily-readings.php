@@ -125,8 +125,8 @@ class ODR_View {
 	public function get_teaser_display() {
 		$data = ODR_DataSourceInterface::get_data();
 
-		echo "<div>" . $data->get_date() . "</div>" .
-		     "<div>" . $data->get_fasting_text() . "</div>";
+		echo "<div>" . ucwords(strtolower($data->get_date())) . "</div>" .
+		     "<div>" . ucfirst(strtolower($data->get_fasting_text())) . "</div>";
 
 		foreach ($data->get_readings() as $reading) {
 			echo "<div>" . $reading->get_title() . "</div>" .
