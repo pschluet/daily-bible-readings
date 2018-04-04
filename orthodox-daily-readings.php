@@ -20,15 +20,9 @@ class ODR_Reading {
 
 	/**
 	 * Constructor
-	 * @param string $title the title for the reading
-	 * @param string $shortText the preview text for the reading
-	 * @param string $fullText the full text of the reading
 	 * @return ODR_Reading
 	 */
-	public function __construct(string $title, string $shortText, string $fullText) {
-		$this->title = $title;
-		$this->shortText = $shortText;
-		$this->fullText = $fullText;
+	public function __construct() {
 	}
 
 	public function get_full_text() {
@@ -41,6 +35,18 @@ class ODR_Reading {
 
 	public function get_short_text() {
 		return $this->shortText;
+	}
+
+	public function set_full_text(string $value) {
+		$this->fullText = $value;
+	}
+
+	public function set_short_text(string $value) {
+		$this->shortText = $value;
+	}
+
+	public function set_title(string $value) {
+		$this->title = $value;
 	}
 }
 
@@ -129,7 +135,7 @@ class ODR_View {
 		     "<div>" . ucfirst(strtolower($data->get_fasting_text())) . "</div>";
 
 		foreach ($data->get_readings() as $reading) {
-			echo "<div>" . $reading->get_title() . "</div>" .
+			echo "<div>" . ucwords(strtolower($reading->get_title())) . "</div>" .
 			     "<div>" . $reading->get_short_text() . "</div>";
 		}
 	}
@@ -141,7 +147,7 @@ class ODR_View {
 		     "<div>" . $data->get_fasting_text() . "</div>";
 
 		foreach ($data->get_readings() as $reading) {
-			echo "<div>" . $reading->get_title() . "</div>" .
+			echo "<div>" . ucwords(strtolower($reading->get_title())) . "</div>" .
 			     "<div>" . $reading->get_full_text() . "</div>";
 		}
 	}
@@ -154,22 +160,55 @@ class ODR_DataSourceInterface {
 	private const DATA_SOURCE_URL = "http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicalDaysRss";
 
 	public static function get_data() {
-		$readings = array(new ODR_Reading("title1", "shortText1", "fullText1"),
-			new ODR_Reading("title2", "shortText2", "fullText2"),
-			new ODR_Reading("title3", "shortText3", "fullText3"));
 
 		$out = new ODR_ReadingsDataModel();
 
-		$xml = simplexml_load_string(ODR_DataSourceInterface::get_data_from_source());
+		// Grab the content from antiochian.org
+		$xml = new SimpleXMLElement(ODR_DataSourceInterface::get_data_from_source());
 		$item = $xml->channel->item;
 
 		$out->set_date($item->title);
 		$out->set_fasting_text($item->FastDesignation);
-		$out->set_readings($readings);
+
+		// Parse the readings tags to account for multiple readings
+		$out->set_readings(ODR_DataSourceInterface::parse_readings($item));
 
 		return $out;
 	}
 
+	/**
+	 * Get all of the readings from the XML
+	 * @param SimpleXMLElement $xml the XML "item" tag data from antiochian.org
+	 * @return array of ODR_Reading objects
+	 */
+	private static function parse_readings(SimpleXMLElement $item) {
+		$out = array();
+		$reading = new ODR_Reading();
+
+		foreach ($item->children() as $tag) {
+			$tagName = $tag->getName();
+			if (strpos($tagName,'Reading') !== false) {
+				if (strpos($tagName,'Title') !== false) {
+					$reading->set_title($item->$tagName);
+				}
+				elseif (strpos($tagName,'Teaser') !== false) {
+					$reading->set_short_text($item->$tagName);
+				}
+				elseif (strpos($tagName,'FullText') !== false) {
+					$reading->set_full_text($item->$tagName);
+					$out[] = clone $reading;
+				}
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Get the data from antiochian.org
+	 * 
+	 * @return string the XML data from antiochian.org
+	 */
 	private static function get_data_from_source() {
 		$curl = curl_init();
     	curl_setopt($curl, CURLOPT_URL, ODR_DataSourceInterface::DATA_SOURCE_URL);
