@@ -137,7 +137,6 @@ class ODR_View {
 	}
 
 	public function get_teaser_display() {
-		//ODR_LocalDataStoreInterface::sync_data();
 		$data = ODR_LocalDataStoreInterface::get_data();
 
 		echo "<div>" . ucwords(strtolower($data->get_date())) . "</div>" .
@@ -150,7 +149,6 @@ class ODR_View {
 	}
 
 	public function get_full_display() {
-		//ODR_LocalDataStoreInterface::sync_data();
 		$data = ODR_LocalDataStoreInterface::get_data();
 
 		echo "<div>" . ucwords(strtolower($data->get_date())) . "</div>" .
