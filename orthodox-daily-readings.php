@@ -132,32 +132,40 @@ class ODR_View {
 	public function __construct() {
 
 		// Register shortcodes
-		add_shortcode('daily_readings_teaser', array($this, 'get_teaser_display'));
-		add_shortcode('daily_readings_full', array($this, 'get_full_display'));
+		add_shortcode('daily_readings_date', array($this, 'get_date_display'));
+		add_shortcode('daily_readings_fast_rule', array($this, 'get_fast_rule_display'));
+		add_shortcode('daily_readings_teaser_text', array($this, 'get_teaser_display'));
+		add_shortcode('daily_readings_full_text', array($this, 'get_full_display'));
+	}
+
+	public function get_date_display() {
+		$data = ODR_LocalDataStoreInterface::get_data();
+		return '<h2 class="odr_date">' . ucwords(strtolower($data->get_date())) . '</h2>';
+	}
+
+	public function get_fast_rule_display() {
+		$data = ODR_LocalDataStoreInterface::get_data();
+		return '<div class="odr_fast_rule">' . ucwords(strtolower($data->get_fasting_text())) . '</div>';
 	}
 
 	public function get_teaser_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
-
-		echo "<div>" . ucwords(strtolower($data->get_date())) . "</div>" .
-		     "<div>" . ucfirst(strtolower($data->get_fasting_text())) . "</div>";
-
+		$out = '';
 		foreach ($data->get_readings() as $reading) {
-			echo "<div>" . ucwords(strtolower($reading->get_title())) . "</div>" .
-			     "<div>" . $reading->get_short_text() . "</div>";
+			$out .= '<h4 class="odr_teaser_reading_title">' . ucwords(strtolower($reading->get_title())) . '</h4>' .
+			     '<p class="odr_teaser_reading_text">' . $reading->get_short_text() . '</p>';
 		}
+		return $out;
 	}
 
 	public function get_full_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
-
-		echo "<div>" . ucwords(strtolower($data->get_date())) . "</div>" .
-		     "<div>" . ucwords(strtolower($data->get_fasting_text())) . "</div>";
-
+		$out = '';
 		foreach ($data->get_readings() as $reading) {
-			echo "<div>" . ucwords(strtolower($reading->get_title())) . "</div>" .
-			     "<div>" . $reading->get_full_text() . "</div>";
+			$out .= '<h3 class="odr_full_reading_title">' . ucwords(strtolower($reading->get_title())) . '</h3>' .
+			     '<p class="odr_full_reading_text">' . $reading->get_full_text() . '</p>';
 		}
+		return $out;
 	}
 }
 
