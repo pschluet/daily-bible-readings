@@ -68,7 +68,7 @@ class ODR_ReadingsDataModel {
 		return $this->date;
 	}
 
-	public function set_date($value) {
+	public function set_date(string $value) {
 		$this->date = $value;
 	}
 
@@ -76,7 +76,7 @@ class ODR_ReadingsDataModel {
 		return $this->readings;
 	}
 
-	public function set_readings($value) {
+	public function set_readings(array $value) {
 		$this->readings = $value;
 	}
 
@@ -84,7 +84,7 @@ class ODR_ReadingsDataModel {
 		return $this->fastingText;
 	}
 
-	public function set_fasting_text($value) {
+	public function set_fasting_text(string $value) {
 		$this->fastingText = $value;
 	}
 }
@@ -93,23 +93,31 @@ class ODR_ReadingsDataModel {
  * Handles activation and deactivation of the plugin
  */
 class ODR_ActivationHandler {
+	private const CRON_NAME = "odr_sync_data";
 
 	/**
 	 * Constructor
 	 * @return ODR_ActivationHandler
 	 */
 	public function __construct() {
-		register_activation_hook(__FILE__, 'ODR_ActivationHandler::on_activate');
-		register_deactivation_hook(__FILE__, 'ODR_ActivationHandler::on_deactivate');
+		register_activation_hook(__FILE__, array(__CLASS__, 'on_activate'));
+		register_deactivation_hook(__FILE__, array(__CLASS__, 'on_deactivate'));
+
+		// Add the hook for the cron job callback
+		add_action(ODR_ActivationHandler::CRON_NAME, 'ODR_LocalDataStoreInterface::sync_data');
 	}
 
 	public static function on_activate() {
-		// Add options to the database if they don't already exist
-		update_option('odr_readings', 0);
+		// Schedule the cron job for repeatedly retrieving data from antiochian.org
+		if (!wp_next_scheduled(ODR_ActivationHandler::CRON_NAME)) {
+    		wp_schedule_event(time(), 'hourly', ODR_ActivationHandler::CRON_NAME);
+		}
 	}
 
 	public static function on_deactivate() {
-		// Do nothing
+		// Unschedule the cron job
+		$timestamp = wp_next_scheduled(ODR_ActivationHandler::CRON_NAME);
+		wp_unschedule_event($timestamp, ODR_ActivationHandler::CRON_NAME);
 	}
 }
 
@@ -129,7 +137,8 @@ class ODR_View {
 	}
 
 	public function get_teaser_display() {
-		$data = ODR_DataSourceInterface::get_data();
+		//ODR_LocalDataStoreInterface::sync_data();
+		$data = ODR_LocalDataStoreInterface::get_data();
 
 		echo "<div>" . ucwords(strtolower($data->get_date())) . "</div>" .
 		     "<div>" . ucfirst(strtolower($data->get_fasting_text())) . "</div>";
@@ -141,15 +150,43 @@ class ODR_View {
 	}
 
 	public function get_full_display() {
-		$data = ODR_DataSourceInterface::get_data();
+		//ODR_LocalDataStoreInterface::sync_data();
+		$data = ODR_LocalDataStoreInterface::get_data();
 
-		echo "<div>" . $data->get_date() . "</div>" .
-		     "<div>" . $data->get_fasting_text() . "</div>";
+		echo "<div>" . ucwords(strtolower($data->get_date())) . "</div>" .
+		     "<div>" . ucwords(strtolower($data->get_fasting_text())) . "</div>";
 
 		foreach ($data->get_readings() as $reading) {
 			echo "<div>" . ucwords(strtolower($reading->get_title())) . "</div>" .
 			     "<div>" . $reading->get_full_text() . "</div>";
 		}
+	}
+}
+
+/** 
+ * Interfaces with the Wordpress database
+ */
+class ODR_LocalDataStoreInterface {
+	private const DATA_KEY = "odr_daily_readings_data";
+
+	/**
+	 * Get the data from antiochian.org and store it in the Wordpress database
+	 */
+	public static function sync_data() {
+		// Get data from antiochian.org
+		$data = ODR_DataSourceInterface::get_data();
+
+		// Store it in our database
+		update_option(ODR_LocalDataStoreInterface::DATA_KEY, $data);
+	}
+
+	/**
+	 * Retrieve the readings data from the database
+	 *
+	 * @return ODR_ReadingsDataModel the reading data
+	 */
+	public static function get_data() {
+		return get_option(ODR_LocalDataStoreInterface::DATA_KEY);
 	}
 }
 
