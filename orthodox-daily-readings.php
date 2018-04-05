@@ -154,7 +154,11 @@ class ODR_View {
 
 	public function get_date_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
-		return '<h2 class="odr_date">' . ucwords(strtolower($data->get_date())) . '</h2>';
+		$dateText = ucwords(strtolower($data->get_date()));
+
+		// Strip out the year
+		$tokens = explode(',', $dateText);
+		return '<h2 class="odr_date">' . $tokens[0] . $tokens[1] . '</h2>';
 	}
 
 	public function get_fast_rule_display() {
