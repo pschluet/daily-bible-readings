@@ -95,6 +95,7 @@ class ODR_ReadingsDataModel {
 class ODR_ActivationHandler {
 	private const CRON_NAME = 'odr_sync_data';
 	private const SCRIPT_NAME = 'my_javascript';
+	private const READMORE_JS_LIB = 'readmore_lib';
 
 	/**
 	 * Constructor
@@ -113,9 +114,12 @@ class ODR_ActivationHandler {
 	}
 
 	public static function setup_javascript() {
-		// Register javascript script for dynamic expanding/contracting of reading text
-		wp_register_script(ODR_ActivationHandler::SCRIPT_NAME, plugins_url('scripts.js', __FILE__), array('jquery'));
+		// Register javascript scripts for dynamic expanding/contracting of reading text
+		wp_register_script(ODR_ActivationHandler::SCRIPT_NAME, plugins_url('js/scripts.js', __FILE__), array('jquery'));
 		wp_enqueue_script(ODR_ActivationHandler::SCRIPT_NAME);
+
+		wp_register_script(ODR_ActivationHandler::READMORE_JS_LIB, plugins_url('js/readmore_v2.2.0.min.js', __FILE__));
+		wp_enqueue_script(ODR_ActivationHandler::READMORE_JS_LIB);
 	}
 
 	public static function on_activate() {
@@ -145,8 +149,7 @@ class ODR_View {
 		// Register shortcodes
 		add_shortcode('daily_readings_date', array($this, 'get_date_display'));
 		add_shortcode('daily_readings_fast_rule', array($this, 'get_fast_rule_display'));
-		add_shortcode('daily_readings_teaser_text', array($this, 'get_teaser_display'));
-		add_shortcode('daily_readings_full_text', array($this, 'get_full_display'));
+		add_shortcode('daily_readings_text', array($this, 'get_readings_text_display'));
 	}
 
 	public function get_date_display() {
@@ -159,22 +162,12 @@ class ODR_View {
 		return '<div class="odr_fast_rule">' . ucwords(strtolower($data->get_fasting_text())) . '</div>';
 	}
 
-	public function get_teaser_display() {
+	public function get_readings_text_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
 		$out = '';
 		foreach ($data->get_readings() as $reading) {
-			$out .= '<h4 class="odr_teaser_reading_title">' . ucwords(strtolower($reading->get_title())) . '</h4>' .
-			     '<p class="odr_teaser_reading_text">' . $reading->get_short_text() . '</p>';
-		}
-		return $out;
-	}
-
-	public function get_full_display() {
-		$data = ODR_LocalDataStoreInterface::get_data();
-		$out = '';
-		foreach ($data->get_readings() as $reading) {
-			$out .= '<h3 class="odr_full_reading_title">' . ucwords(strtolower($reading->get_title())) . '</h3>' .
-			     '<p class="odr_full_reading_text">' . $reading->get_full_text() . '</p>';
+			$out .= '<h3 class="odr_reading_title">' . ucwords(strtolower($reading->get_title())) . '</h3>' .
+			     '<p class="odr_reading_text">' . $reading->get_full_text() . '</p>';
 		}
 		return $out;
 	}
