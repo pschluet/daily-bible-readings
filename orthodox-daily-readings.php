@@ -93,7 +93,8 @@ class ODR_ReadingsDataModel {
  * Handles activation and deactivation of the plugin
  */
 class ODR_ActivationHandler {
-	private const CRON_NAME = "odr_sync_data";
+	private const CRON_NAME = 'odr_sync_data';
+	private const SCRIPT_NAME = 'my_javascript';
 
 	/**
 	 * Constructor
@@ -105,6 +106,16 @@ class ODR_ActivationHandler {
 
 		// Add the hook for the cron job callback
 		add_action(ODR_ActivationHandler::CRON_NAME, 'ODR_LocalDataStoreInterface::sync_data');
+
+		// Add the hook for javascript for dynamic expanding/contracting of reading text
+		add_action('wp_enqueue_scripts', array(__CLASS__, 'setup_javascript'));
+
+	}
+
+	public static function setup_javascript() {
+		// Register javascript script for dynamic expanding/contracting of reading text
+		wp_register_script(ODR_ActivationHandler::SCRIPT_NAME, plugins_url('scripts.js', __FILE__), array('jquery'));
+		wp_enqueue_script(ODR_ActivationHandler::SCRIPT_NAME);
 	}
 
 	public static function on_activate() {
