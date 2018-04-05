@@ -93,9 +93,9 @@ class ODR_ReadingsDataModel {
  * Handles activation and deactivation of the plugin
  */
 class ODR_ActivationHandler {
-	public const CRON_NAME = 'odr_sync_data';
-	public const SCRIPT_NAME = 'my_javascript';
-	public const READMORE_JS_LIB = 'readmore_lib';
+	const CRON_NAME = 'odr_sync_data';
+	const SCRIPT_NAME = 'my_javascript';
+	const READMORE_JS_LIB = 'readmore_lib';
 
 	/**
 	 * Constructor
@@ -177,7 +177,7 @@ class ODR_View {
  * Interfaces with the Wordpress database
  */
 class ODR_LocalDataStoreInterface {
-	public const DATA_KEY = "odr_daily_readings_data";
+	const DATA_KEY = "odr_daily_readings_data";
 
 	/**
 	 * Get the data from antiochian.org and store it in the Wordpress database
@@ -204,7 +204,7 @@ class ODR_LocalDataStoreInterface {
  * Interfaces with antiochian.org to get the reading data
  */
 class ODR_DataSourceInterface {
-	public const DATA_SOURCE_URL = "http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicalDaysRss";
+	const DATA_SOURCE_URL = "http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicalDaysRss";
 
 	public static function get_data() {
 
