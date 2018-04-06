@@ -16,6 +16,11 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
+ * Current plugin version.
+ */
+define( 'ODR_VERSION_NUMBER', '1.0.0' );
+
+/**
  * Represents a single reading
  */
 class ODR_Reading {
@@ -120,10 +125,10 @@ class ODR_ActivationHandler {
 
 	public static function setup_javascript() {
 		// Register javascript scripts for dynamic expanding/contracting of reading text
-		wp_register_script(ODR_ActivationHandler::SCRIPT_NAME, plugins_url('js/scripts.js', __FILE__), array('jquery'));
+		wp_register_script(ODR_ActivationHandler::SCRIPT_NAME, plugins_url('js/scripts.js', __FILE__), array('jquery'), ODR_VERSION_NUMBER);
 		wp_enqueue_script(ODR_ActivationHandler::SCRIPT_NAME);
 
-		wp_register_script(ODR_ActivationHandler::READMORE_JS_LIB, plugins_url('js/readmore_v2.2.0.min.js', __FILE__));
+		wp_register_script(ODR_ActivationHandler::READMORE_JS_LIB, plugins_url('js/readmore_v2.2.0.min.js', __FILE__), array(), ODR_VERSION_NUMBER);
 		wp_enqueue_script(ODR_ActivationHandler::READMORE_JS_LIB);
 	}
 
