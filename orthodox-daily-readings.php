@@ -103,7 +103,6 @@ class ODR_ReadingsDataModel {
  * Handles activation and deactivation of the plugin
  */
 class ODR_ActivationHandler {
-	const CRON_NAME = 'odr_sync_data';
 	const SCRIPT_NAME = 'my_javascript';
 	const READMORE_JS_LIB = 'readmore_lib';
 
@@ -116,7 +115,7 @@ class ODR_ActivationHandler {
 		register_deactivation_hook(__FILE__, array(__CLASS__, 'on_deactivate'));
 
 		// Add the hook for the cron job callback
-		add_action(ODR_ActivationHandler::CRON_NAME, 'ODR_LocalDataStoreInterface::sync_data');
+		ODR_Scheduler::add_action_hooks();
 
 		// Add the hook for javascript for dynamic expanding/contracting of reading text
 		add_action('wp_enqueue_scripts', array(__CLASS__, 'setup_javascript'));
@@ -133,16 +132,79 @@ class ODR_ActivationHandler {
 	}
 
 	public static function on_activate() {
-		// Schedule the cron job for repeatedly retrieving data from antiochian.org
-		if (!wp_next_scheduled(ODR_ActivationHandler::CRON_NAME)) {
-    		wp_schedule_event(time(), 'hourly', ODR_ActivationHandler::CRON_NAME);
-		}
+		// Fetch data from antiochian.org right now
+		ODR_Scheduler::schedule_single_data_sync();
+
+		// Schedule the cron job for getting data from antiochian.org daily
+		ODR_Scheduler::schedule_recurring_data_sync();		
 	}
 
 	public static function on_deactivate() {
-		// Unschedule the cron job
-		$timestamp = wp_next_scheduled(ODR_ActivationHandler::CRON_NAME);
-		wp_unschedule_event($timestamp, ODR_ActivationHandler::CRON_NAME);
+		ODR_Scheduler::unschedule_data_sync();
+	}
+}
+
+/**
+ * Handles scheduling the data sync events in which the plugin grabs
+ * data from antiochian.org and puts it in the Wordpress database
+ */
+class ODR_Scheduler {
+	const CRON_NAME = 'odr_sync_data';
+	const SINGLE_EVENT_NAME = 'odr_sync_data_once';
+
+	// The local time that the data should refresh based on the Wordpress
+	// installation's currently selected time zone. Add 5 minutes so
+	// we don't try to grab the data exactly at midnight in case antiochian.org
+	// hasn't updated yet.
+	const REFRESH_TIME_LOCAL = 'today 00:05:00'; 
+
+	/**
+	 * Add the Wordpress action hooks for the cron job callbacks
+	 */
+	public static function add_action_hooks() {
+		add_action(ODR_Scheduler::CRON_NAME, 'ODR_LocalDataStoreInterface::sync_data');
+		add_action(ODR_Scheduler::SINGLE_EVENT_NAME, 'ODR_LocalDataStoreInterface::sync_data');
+	}
+
+	/**
+	 * Schedule a recurring data retrieval to occur the NEXT time REFRESH_TIME occurs
+	 * and daily thereafter
+	 */
+	public static function schedule_recurring_data_sync() {
+		if (!wp_next_scheduled(ODR_Scheduler::CRON_NAME)) {	
+			$currentTimeTodayUTC = time();
+			// Convert refresh local time to UTC time based on the Wordpress 
+			// installation's currently selected time zone.
+			$refreshTimeUTC = strtotime(ODR_Scheduler::REFRESH_TIME_LOCAL) - get_option('gmt_offset') * 60 * 60;
+
+			// If the scheduled time is in the past, wp_schedule_event will fire immediately.
+			// We don't want that.
+			if ($refreshTimeUTC < $currentTimeTodayUTC) {
+				$refreshTimeUTC += 24 * 60 * 60;
+			}		
+
+			// Schedule a recurring retrieval for each day at midnight local time based
+			// on the Wordpress installation's currently selected time zone.
+    		wp_schedule_event($refreshTimeUTC, 'daily', ODR_Scheduler::CRON_NAME);
+		}
+	}
+
+	/**
+	 * Schedule one data retrieval right now
+	 */
+	public static function schedule_single_data_sync() {
+		if (!wp_next_scheduled(ODR_Scheduler::CRON_NAME)) {	
+			wp_schedule_single_event(time(), ODR_Scheduler::SINGLE_EVENT_NAME);
+		}
+	}
+
+	public static function unschedule_data_sync() {
+		// Unschedule the cron jobs
+		$timestamp = wp_next_scheduled(ODR_Scheduler::CRON_NAME);
+		wp_unschedule_event($timestamp, ODR_Scheduler::CRON_NAME);
+
+		$timestamp = wp_next_scheduled(ODR_Scheduler::SINGLE_EVENT_NAME);
+		wp_unschedule_event($timestamp, ODR_Scheduler::SINGLE_EVENT_NAME);
 	}
 }
 
@@ -221,7 +283,6 @@ class ODR_DataSourceInterface {
 	const DATA_SOURCE_URL = "http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicalDaysRss";
 
 	public static function get_data() {
-
 		$out = new ODR_ReadingsDataModel();
 
 		// Grab the content from antiochian.org
