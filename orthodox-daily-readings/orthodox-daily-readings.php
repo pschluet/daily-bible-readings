@@ -1,13 +1,13 @@
 <?php
 /*
 Plugin Name: Orthodox Daily Readings
-Plugin URI: http://paulschlueter.com
+Plugin URI: https://github.com/pschluet/orthodox-daily-readings
 Description: This plugin allows you to post the current day's readings and fasting rule from antiochian.org on your own website.
 Author: Paul Schlueter
 Version: 1.0.0
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Author URI: http://paulschlueter.com
+Author URI: https://github.com/pschluet/
 */
 
 // If this file is called directly, abort.
