@@ -10,6 +10,11 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Author URI: http://paulschlueter.com
 */
 
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+	die;
+}
+
 /**
  * Represents a single reading
  */
