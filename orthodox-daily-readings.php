@@ -125,10 +125,10 @@ class ODR_ActivationHandler {
 
 	public static function setup_javascript() {
 		// Register javascript scripts for dynamic expanding/contracting of reading text
-		wp_register_script(ODR_ActivationHandler::SCRIPT_NAME, plugins_url('js/scripts.js', __FILE__), array('jquery'), ODR_VERSION_NUMBER);
+		wp_register_script(ODR_ActivationHandler::SCRIPT_NAME, plugins_url('public/js/scripts.js', __FILE__), array('jquery'), ODR_VERSION_NUMBER);
 		wp_enqueue_script(ODR_ActivationHandler::SCRIPT_NAME);
 
-		wp_register_script(ODR_ActivationHandler::READMORE_JS_LIB, plugins_url('js/readmore_v2.2.0.min.js', __FILE__), array(), ODR_VERSION_NUMBER);
+		wp_register_script(ODR_ActivationHandler::READMORE_JS_LIB, plugins_url('public/js/readmore_v2.2.0.min.js', __FILE__), array(), ODR_VERSION_NUMBER);
 		wp_enqueue_script(ODR_ActivationHandler::READMORE_JS_LIB);
 	}
 
@@ -164,7 +164,7 @@ class ODR_View {
 
 	public function get_date_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
-		$dateText = ucwords(strtolower($data->get_date()));
+		$dateText = ucwords(strtolower(esc_html($data->get_date())));
 
 		// Strip out the year
 		$tokens = explode(',', $dateText);
@@ -173,15 +173,15 @@ class ODR_View {
 
 	public function get_fast_rule_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
-		return '<div class="odr_fast_rule">' . ucwords(strtolower($data->get_fasting_text())) . '</div>';
+		return '<div class="odr_fast_rule">' . ucwords(strtolower(esc_html($data->get_fasting_text()))) . '</div>';
 	}
 
 	public function get_readings_text_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
 		$out = '';
 		foreach ($data->get_readings() as $reading) {
-			$out .= '<h3 class="odr_reading_title">' . ucwords(strtolower($reading->get_title())) . '</h3>' .
-			     '<p class="odr_reading_text">' . $reading->get_full_text() . '</p>';
+			$out .= '<h3 class="odr_reading_title">' . ucwords(strtolower(esc_html($reading->get_title()))) . '</h3>' .
+			     '<p class="odr_reading_text">' . esc_html($reading->get_full_text()) . '</p>';
 		}
 		return $out;
 	}
@@ -228,8 +228,9 @@ class ODR_DataSourceInterface {
 		$xml = new SimpleXMLElement(ODR_DataSourceInterface::get_data_from_source());
 		$item = $xml->channel->item;
 
-		$out->set_date($item->title);
-		$out->set_fasting_text($item->FastDesignation);
+		// Set data model properties while sanitizing data from web service
+		$out->set_date(sanitize_text_field($item->title));
+		$out->set_fasting_text(sanitize_text_field($item->FastDesignation));
 
 		// Parse the readings tags to account for multiple readings
 		$out->set_readings(ODR_DataSourceInterface::parse_readings($item));
@@ -246,17 +247,18 @@ class ODR_DataSourceInterface {
 		$out = array();
 		$reading = new ODR_Reading();
 
+		// Set data model properties and sanitize data from web service
 		foreach ($item->children() as $tag) {
 			$tagName = $tag->getName();
 			if (strpos($tagName,'Reading') !== false) {
-				if (strpos($tagName,'Title') !== false) {
-					$reading->set_title($item->$tagName);
+				if (strpos($tagName,'Title') !== false) {					
+					$reading->set_title(sanitize_text_field($item->$tagName));
 				}
 				elseif (strpos($tagName,'Teaser') !== false) {
-					$reading->set_short_text($item->$tagName);
+					$reading->set_short_text(sanitize_text_field($item->$tagName));
 				}
 				elseif (strpos($tagName,'FullText') !== false) {
-					$reading->set_full_text($item->$tagName);
+					$reading->set_full_text(sanitize_text_field($item->$tagName));
 					$out[] = clone $reading;
 				}
 			}
@@ -272,11 +274,11 @@ class ODR_DataSourceInterface {
 	 */
 	private static function get_data_from_source() {
 		$curl = curl_init();
-    	curl_setopt($curl, CURLOPT_URL, ODR_DataSourceInterface::DATA_SOURCE_URL);
-    	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-    	$data = curl_exec($curl);
-    	curl_close($curl);
-    	return $data;
+		curl_setopt($curl, CURLOPT_URL, ODR_DataSourceInterface::DATA_SOURCE_URL);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+		$data = curl_exec($curl);
+		curl_close($curl);
+		return $data;
 	}
 }
 
