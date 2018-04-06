@@ -3,7 +3,9 @@ A Wordpress plugin to post the current day's readings and fasting rule from anti
 
 ## Installation
 First you must put the plugin's files in the appropriate folder in your Wordpress installation.
-1. [Download the plugin](https://github.com/pschluet/orthodox-daily-readings/archive/master.zip).
+1. Download the plugin.
+    1. Go to the [latest release page](https://github.com/pschluet/orthodox-daily-readings/releases/latest).
+    2. Click on "orthodox-daily-readings.zip" under "Downloads".
 2. Unzip the file that you downloaded.
 3. Upload the "orthodox-daily-readings" folder to your Wordpress plugins directory located at 
 ```
