@@ -209,7 +209,7 @@ class ODR_Scheduler {
 }
 
 /**
- * Handles display of the readings via shortlink
+ * Handles display of the readings via shortcode
  */
 class ODR_View {
 	/**
@@ -218,11 +218,40 @@ class ODR_View {
 	 */
 	public function __construct() {
 
-		// Register shortcodes
-		add_shortcode('orthodox-daily-readings-date', array($this, 'get_date_display'));
-		add_shortcode('orthodox-daily-readings-fasting', array($this, 'get_fast_rule_display'));
-		add_shortcode('orthodox-daily-readings-bible', array($this, 'get_readings_text_display'));
-		add_shortcode('orthodox-daily-readings-all', array($this, 'get_readings_all_display'));
+		// Register shortcode
+		add_shortcode('orthodox-daily-readings', array($this, 'shortcode_handler'));
+	}
+
+	/**
+	 * Handles parsing of the user shortcodes
+	 */
+	public function shortcode_handler($atts = []) {
+		// normalize attribute keys, lowercase
+    	$atts = array_change_key_case((array)$atts, CASE_LOWER);
+
+		// override default attributes with user attributes
+    	$ord_atts = shortcode_atts(
+			array(
+				'content' => 'all',
+			),
+			$atts);
+
+    	// Render view based on which shortcode argument was passed in
+    	switch (strtolower($ord_atts['content'])) {
+    		case 'all':
+    			return ODR_View::get_readings_all_display();
+    		case 'date':
+    			return ODR_View::get_date_display();
+    		case 'fasting':
+    			return ODR_View::get_fast_rule_display();
+    		case 'readings':
+    			return ODR_View::get_readings_text_display();
+    		default:
+    			return '<div class="odr_shortcode_error"><h5>Orthodox Daily Readings Plugin Error</h5> <p>[orthodox-daily-readings content="' . 
+    				esc_html($ord_atts['content']) . '"] is not a valid shortcode. "' .  esc_html($ord_atts['content']) . 
+    				'" is an invalid content argument. Acceptable values are "all", "date", "fasting", or "readings". ' .
+    				'For example, the following is valid: ' . '[orthodox-daily-readings content="all"]</p></div>';
+    	}
 	}
 
 	public function get_date_display() {
