@@ -29,32 +29,55 @@ class ODR_Reading {
 	private $fullText;
 
 	/**
-	 * Constructor
-	 * @return ODR_Reading
+	 * Get the full text of the bible reading.
+	 * 
+	 * @return string the text of the bible reading
 	 */
-	public function __construct() {
-	}
-
 	public function get_full_text() {
 		return $this->fullText;
 	}
 
+	/**
+	 * Get the title of the bible reading.
+	 * 
+	 * @return string the title of the bible reading
+	 */
 	public function get_title() {
 		return $this->title;
 	}
 
+	/**
+	 * Get the short "teaser" text of the bible reading.
+	 * 
+	 * @return string the short "teaser" text of the bible reading
+	 */
 	public function get_short_text() {
 		return $this->shortText;
 	}
 
+	/**
+	 * Set the full text of the bible reading.
+	 *
+	 * @param string $value The full text of the bible reading
+	 */
 	public function set_full_text(string $value) {
 		$this->fullText = $value;
 	}
 
+	/**
+	 * Set the short "teaser" text of the bible reading.
+	 *
+	 * @param string $value The short "teaser" text of the bible reading
+	 */
 	public function set_short_text(string $value) {
 		$this->shortText = $value;
 	}
 
+	/**
+	 * Set the title of the bible reading.
+	 *
+	 * @param string $value The title of the bible reading
+	 */
 	public function set_title(string $value) {
 		$this->title = $value;
 	}
@@ -69,31 +92,55 @@ class ODR_ReadingsDataModel {
 	private $fastingText;
 
 	/**
-	 * Constructor
+	 * Get the date of the readings.
+	 * 
+	 * @return string The date of the readings
 	 */
-	public function __construct() {
-	}
-
 	public function get_date() {
 		return $this->date;
 	}
 
+	/**
+	 * Set the date of the readings.
+	 *
+	 * @param string $value The date of the readings
+	 */
 	public function set_date(string $value) {
 		$this->date = $value;
 	}
 
+	/**
+	 * Get the readings.
+	 * 
+	 * @return array An array of ODR_Reading items
+	 */
 	public function get_readings() {
 		return $this->readings;
 	}
 
+	/**
+	 * Set the bible readings.
+	 *
+	 * @param array $value An array of ODR_Reading items
+	 */
 	public function set_readings(array $value) {
 		$this->readings = $value;
 	}
 
+	/**
+	 * Get the fasting rule text.
+	 * 
+	 * @return string the fasting rule text
+	 */
 	public function get_fasting_text() {
 		return $this->fastingText;
 	}
 
+	/**
+	 * Set the fasting rule text.
+	 *
+	 * @param string $value The fasting rule text
+	 */
 	public function set_fasting_text(string $value) {
 		$this->fastingText = $value;
 	}
@@ -107,7 +154,8 @@ class ODR_ActivationHandler {
 	const READMORE_JS_LIB = 'readmore_lib';
 
 	/**
-	 * Constructor
+	 * Constructor.
+	 * 
 	 * @return ODR_ActivationHandler
 	 */
 	public function __construct() {
@@ -122,6 +170,9 @@ class ODR_ActivationHandler {
 
 	}
 
+	/**
+	 * Register the javascript files needed for the plugin.
+	 */
 	public static function setup_javascript() {
 		// Register javascript scripts for dynamic expanding/contracting of reading text
 		wp_register_script(ODR_ActivationHandler::SCRIPT_NAME, plugins_url('public/js/scripts.js', __FILE__), array('jquery'), ODR_VERSION_NUMBER);
@@ -131,6 +182,11 @@ class ODR_ActivationHandler {
 		wp_enqueue_script(ODR_ActivationHandler::READMORE_JS_LIB);
 	}
 
+	/**
+	 * Runs on plugin activation.
+	 *
+	 * Get data from antiochian.org immediately on activation and schedule recurring retrieval.
+	 */
 	public static function on_activate() {
 		// Fetch data from antiochian.org right now
 		ODR_Scheduler::schedule_single_data_sync();
@@ -139,6 +195,11 @@ class ODR_ActivationHandler {
 		ODR_Scheduler::schedule_recurring_data_sync();		
 	}
 
+	/**
+	 * Runs on plugin deactivation.
+	 *
+	 * Unschedule recurring data retrieval from antiochian.org.
+	 */
 	public static function on_deactivate() {
 		ODR_Scheduler::unschedule_data_sync();
 	}
@@ -167,7 +228,7 @@ class ODR_Scheduler {
 	}
 
 	/**
-	 * Schedule a recurring data retrieval to occur the NEXT time REFRESH_TIME occurs
+	 * Schedule a recurring data retrieval to occur the NEXT time REFRESH_TIME_LOCAL occurs
 	 * and daily thereafter
 	 */
 	public static function schedule_recurring_data_sync() {
@@ -190,7 +251,7 @@ class ODR_Scheduler {
 	}
 
 	/**
-	 * Schedule one data retrieval right now
+	 * Schedule one antiochian.org data retrieval right now.
 	 */
 	public static function schedule_single_data_sync() {
 		if (!wp_next_scheduled(ODR_Scheduler::CRON_NAME)) {	
@@ -198,6 +259,9 @@ class ODR_Scheduler {
 		}
 	}
 
+	/**
+	 * Unschedule all antiochian.org data retrieval jobs.
+	 */
 	public static function unschedule_data_sync() {
 		// Unschedule the cron jobs
 		$timestamp = wp_next_scheduled(ODR_Scheduler::CRON_NAME);
@@ -214,6 +278,7 @@ class ODR_Scheduler {
 class ODR_View {
 	/**
 	 * Constructor
+	 *
 	 * @return ODR_View the view
 	 */
 	public function __construct() {
@@ -224,6 +289,8 @@ class ODR_View {
 
 	/**
 	 * Handles parsing of the user shortcodes
+	 *
+	 * @return string The rendered html content for the shortcode
 	 */
 	public function shortcode_handler($atts = []) {
 		// normalize attribute keys, lowercase
@@ -254,6 +321,11 @@ class ODR_View {
     	}
 	}
 
+	/**
+	 * Create the HTML content to display the date
+	 *
+	 * @return string The rendered html content for the date
+	 */
 	public function get_date_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
 		$dateText = ucwords(strtolower(esc_html($data->get_date())));
@@ -263,11 +335,21 @@ class ODR_View {
 		return '<h2 class="odr_date">' . $tokens[0] . $tokens[1] . '</h2>';
 	}
 
+	/**
+	 * Create the HTML content to display the fasting rule
+	 *
+	 * @return string The rendered html content for the fasting rule
+	 */
 	public function get_fast_rule_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
 		return '<div class="odr_fast_rule">' . ucwords(strtolower(esc_html($data->get_fasting_text()))) . '</div>';
 	}
 
+	/**
+	 * Create the HTML content to display the full readings with titles
+	 *
+	 * @return string The rendered html content for the full readings with titles
+	 */
 	public function get_readings_text_display() {
 		$data = ODR_LocalDataStoreInterface::get_data();
 		$out = '';
@@ -278,6 +360,11 @@ class ODR_View {
 		return $out;
 	}
 
+	/**
+	 * Create the HTML content to display all display components together
+	 *
+	 * @return string The rendered html content for all display components together
+	 */
 	public function get_readings_all_display() {
 		return ODR_View::get_date_display() . ODR_View::get_fast_rule_display() . ODR_View::get_readings_text_display();
 	}
@@ -316,6 +403,11 @@ class ODR_LocalDataStoreInterface {
 class ODR_DataSourceInterface {
 	const DATA_SOURCE_URL = "http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicalDaysRss";
 
+	/**
+	 * Get the readings data from the antiochian.org web-service
+	 * 
+	 * @return ODR_ReadingsDataModel All of the reading data.
+	 */
 	public static function get_data() {
 		$out = new ODR_ReadingsDataModel();
 
@@ -334,8 +426,10 @@ class ODR_DataSourceInterface {
 	}
 
 	/**
-	 * Get all of the readings from the XML
+	 * Get all of the readings from the XML returned by the antiochian.org web-service
+	 *
 	 * @param SimpleXMLElement $xml the XML "item" tag data from antiochian.org
+	 *
 	 * @return array of ODR_Reading objects
 	 */
 	private static function parse_readings(SimpleXMLElement $item) {
@@ -363,7 +457,7 @@ class ODR_DataSourceInterface {
 	}
 
 	/**
-	 * Get the data from antiochian.org
+	 * Query antiochian.org for the data
 	 * 
 	 * @return string the XML data from antiochian.org
 	 */
