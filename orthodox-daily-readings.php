@@ -219,9 +219,10 @@ class ODR_View {
 	public function __construct() {
 
 		// Register shortcodes
-		add_shortcode('daily_readings_date', array($this, 'get_date_display'));
-		add_shortcode('daily_readings_fast_rule', array($this, 'get_fast_rule_display'));
-		add_shortcode('daily_readings_text', array($this, 'get_readings_text_display'));
+		add_shortcode('orthodox-daily-readings-date', array($this, 'get_date_display'));
+		add_shortcode('orthodox-daily-readings-fasting', array($this, 'get_fast_rule_display'));
+		add_shortcode('orthodox-daily-readings-bible', array($this, 'get_readings_text_display'));
+		add_shortcode('orthodox-daily-readings-all', array($this, 'get_readings_all_display'));
 	}
 
 	public function get_date_display() {
@@ -246,6 +247,10 @@ class ODR_View {
 			     '<p class="odr_reading_text">' . esc_html($reading->get_full_text()) . '</p>';
 		}
 		return $out;
+	}
+
+	public function get_readings_all_display() {
+		return ODR_View::get_date_display() . ODR_View::get_fast_rule_display() . ODR_View::get_readings_text_display();
 	}
 }
 
