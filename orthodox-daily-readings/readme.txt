@@ -3,7 +3,7 @@ Contributors: paulschlueter
 Tags: orthodox, bible, scripture, lectionary, gospel, epistle, fasting
 Donate link: paypal.me/PaulSchlueter
 Requires at least: 4.9.5
-Tested up to: 4.9.5
+Tested up to: 4.9
 Requires PHP: 7.0.20
 Stable tag: trunk
 License: GPL2
@@ -16,6 +16,8 @@ To show the daily readings and fasting rule, you simply paste the following shor
 ```
 [orthodox-daily-readings content=\"all\"]
 ```
+[Click here](http://allsaintsorthodox.org/daily-readings/) to see a live demo.
+
 If you want more fine-grained control, you can choose to display only specific things by changing the argument to the \"content\"
 attribute in the shortcode. The allowable arguments are:
 * \"all\": show all the content
@@ -28,6 +30,8 @@ For instance, if you want to only show the date and the fasting rule, you can pu
 [orthodox-daily-readings content=\"date\"]
 [orthodox-daily-readings content=\"fasting\"]
 ```
+
+Initially, the readings only show short snippets of the reading text. Clicking "Read More" dynamically reveals the rest of the text without loading a new page.
 
 == Installation ==
 Upload the \"orthodox-daily-readings\" folder to your Wordpress plugins directory located at 
@@ -54,8 +58,9 @@ Yes! This is an open-source project hosted on GitHub [here](https://github.com/p
 
 == Screenshots ==
 1. Example Display with All Content
-2. Only Date and Fasting Rule
+2. Reading 1 Expanded
 3. Only Readings
+4. Only Date and Fasting Rule
 
 == Changelog ==
 = 1.0.0 =
