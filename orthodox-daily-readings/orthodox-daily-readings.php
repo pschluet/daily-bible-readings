@@ -165,6 +165,9 @@ class ODR_Controller {
 
 		// Add the hook for javascript for dynamic expanding/contracting of reading text
 		add_action('wp_enqueue_scripts', array($this, 'setup_javascript'));
+
+		// Add hooks for the data sync callbacks
+		$this->scheduler->register_data_sync_callback(array($this, 'sync_data'));
 	}
 
 	/**
@@ -185,13 +188,11 @@ class ODR_Controller {
 	 * Get data from antiochian.org immediately on activation and schedule recurring retrieval.
 	 */
 	public function on_activate() {
-		$dataSyncCallback = array($this, 'sync_data');
-
 		// Fetch data from antiochian.org right now
-		$this->scheduler->schedule_single_data_sync($dataSyncCallback);
+		$this->scheduler->schedule_single_data_sync();
 
 		// Schedule the cron job for getting data from antiochian.org daily
-		$this->scheduler->schedule_recurring_data_sync($dataSyncCallback);		
+		$this->scheduler->schedule_recurring_data_sync();		
 	}
 
 	/**
@@ -236,14 +237,20 @@ class ODR_Scheduler {
 	// hasn't updated yet.
 	const REFRESH_TIME_LOCAL = 'today 00:05:00'; 
 
+	private $dataSyncCallback;
+
+	public function register_data_sync_callback(callable $actionToPerform)
+	{
+		// Add hooks for cron job callbacks
+		add_action(ODR_Scheduler::CRON_NAME, $actionToPerform);
+		add_action(ODR_Scheduler::SINGLE_EVENT_NAME, $actionToPerform);
+	}
+
 	/**
 	 * Schedule a recurring data retrieval to occur the NEXT time REFRESH_TIME_LOCAL occurs
 	 * and daily thereafter
 	 */
-	public function schedule_recurring_data_sync(callable $actionToPerform) {
-		// Add action hook for the cron job callback
-		add_action(ODR_Scheduler::CRON_NAME, $actionToPerform);
-
+	public function schedule_recurring_data_sync() {
 		if (!wp_next_scheduled(ODR_Scheduler::CRON_NAME)) {	
 			$currentTimeTodayUTC = time();
 			// Convert refresh local time to UTC time based on the Wordpress 
@@ -265,10 +272,7 @@ class ODR_Scheduler {
 	/**
 	 * Schedule one antiochian.org data retrieval right now.
 	 */
-	public function schedule_single_data_sync(callable $actionToPerform) {
-		// Add action hook for the cron job callback
-		add_action(ODR_Scheduler::SINGLE_EVENT_NAME, $actionToPerform);
-
+	public function schedule_single_data_sync() {
 		if (!wp_next_scheduled(ODR_Scheduler::CRON_NAME)) {	
 			wp_schedule_single_event(time(), ODR_Scheduler::SINGLE_EVENT_NAME);
 		}
