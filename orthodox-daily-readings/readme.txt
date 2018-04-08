@@ -4,7 +4,7 @@ Tags: orthodox, bible, scripture, lectionary, gospel, epistle, fasting
 Donate link: paypal.me/PaulSchlueter
 Requires at least: 4.9.5
 Tested up to: 4.9
-Requires PHP: 7.0.20
+Requires PHP: 5.4.45
 Stable tag: trunk
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -67,4 +67,5 @@ Yes! This is an open-source project hosted on GitHub [here](https://github.com/p
 Initial Release
 
 == Upgrade Notice ==
-Example
+= 1.0.0 =
+Initial Release
