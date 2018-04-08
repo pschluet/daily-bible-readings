@@ -146,14 +146,25 @@ class ODR_ReadingsDataModel {
 	}
 }
 
+/**
+ * Handles activation/deactivation and communicating between
+ * model and view
+ */
 class ODR_Controller {
 	const SCRIPT_NAME = 'my_javascript';
 	const READMORE_JS_LIB = 'readmore_lib';
-	//private $activationHandler;
+
 	private $scheduler;
 	private $webServiceInterface;
 	private $model;
 
+	/**
+	 * Constructor
+	 *
+	 * Register hooks and actions
+	 *
+	 * @param ODR_Model $model The "model" of the MVC paradaigm
+	 */
 	public function __construct(ODR_Model $model) {
 		$this->model = $model;
 		$this->scheduler = new ODR_Scheduler();
@@ -216,7 +227,9 @@ class ODR_Controller {
 	}
 
 	/**
-	 * Get the data from the model
+	 * Get readings data from the model
+	 *
+	 * @return ODR_ReadingsDataModel The readings data
 	 */
 	public function get_data() {
 		return $this->model->get_data();
@@ -237,8 +250,11 @@ class ODR_Scheduler {
 	// hasn't updated yet.
 	const REFRESH_TIME_LOCAL = 'today 00:05:00'; 
 
-	private $dataSyncCallback;
-
+	/**
+	 * Set the callback function for the CRON jobs
+	 *
+	 * @param callable $actionToPerform The callback function
+	 */
 	public function register_data_sync_callback(callable $actionToPerform)
 	{
 		// Add hooks for cron job callbacks
@@ -298,6 +314,8 @@ class ODR_View {
 	private $controller;
 	/**
 	 * Constructor
+	 *
+	 * @param ODR_Controller $controller The controller for this view
 	 *
 	 * @return ODR_View the view
 	 */
@@ -397,6 +415,11 @@ class ODR_View {
 class ODR_Model {
 	const DATA_KEY = "odr_daily_readings_data";
 
+	/**
+	 * Save the readings data in the database
+	 *
+	 * @param ODR_ReadingsDataModel $value The reading data
+	 */
 	public function set_data(ODR_ReadingsDataModel $value) {
 		// Store it in our database
 		update_option(ODR_Model::DATA_KEY, $value);
