@@ -281,7 +281,7 @@ class ODR_Scheduler {
 	/**
 	 * Unschedule all antiochian.org data retrieval jobs.
 	 */
-	public static function unschedule_data_sync() {
+	public function unschedule_data_sync() {
 		// Unschedule the cron jobs
 		$timestamp = wp_next_scheduled(ODR_Scheduler::CRON_NAME);
 		wp_unschedule_event($timestamp, ODR_Scheduler::CRON_NAME);
