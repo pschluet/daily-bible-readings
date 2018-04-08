@@ -462,12 +462,7 @@ class ODR_DataSourceInterface {
 	 * @return string the XML data from antiochian.org
 	 */
 	private static function get_data_from_source() {
-		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_URL, ODR_DataSourceInterface::DATA_SOURCE_URL);
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-		$data = curl_exec($curl);
-		curl_close($curl);
-		return $data;
+		return wp_remote_retrieve_body(wp_remote_get(ODR_DataSourceInterface::DATA_SOURCE_URL));
 	}
 }
 
