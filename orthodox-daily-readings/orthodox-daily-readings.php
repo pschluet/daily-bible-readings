@@ -146,40 +146,37 @@ class ODR_ReadingsDataModel {
 	}
 }
 
-/**
- * Handles activation and deactivation of the plugin
- */
-class ODR_ActivationHandler {
+class ODR_Controller {
 	const SCRIPT_NAME = 'my_javascript';
 	const READMORE_JS_LIB = 'readmore_lib';
+	//private $activationHandler;
+	private $scheduler;
+	private $webServiceInterface;
+	private $model;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @return ODR_ActivationHandler
-	 */
-	public function __construct() {
-		register_activation_hook(__FILE__, array(__CLASS__, 'on_activate'));
-		register_deactivation_hook(__FILE__, array(__CLASS__, 'on_deactivate'));
+	public function __construct(ODR_Model $model) {
+		$this->model = $model;
+		$this->scheduler = new ODR_Scheduler();
+		$this->webServiceInterface = new ODR_WebServiceInterface();
 
-		// Add the hook for the cron job callback
-		ODR_Scheduler::add_action_hooks();
+		// Register activation/deactivation hooks
+		register_activation_hook(__FILE__, array($this, 'on_activate'));
+		register_deactivation_hook(__FILE__, array($this, 'on_deactivate'));
 
 		// Add the hook for javascript for dynamic expanding/contracting of reading text
-		add_action('wp_enqueue_scripts', array(__CLASS__, 'setup_javascript'));
-
+		add_action('wp_enqueue_scripts', array($this, 'setup_javascript'));
 	}
 
 	/**
 	 * Register the javascript files needed for the plugin.
 	 */
-	public static function setup_javascript() {
+	public function setup_javascript() {
 		// Register javascript scripts for dynamic expanding/contracting of reading text
-		wp_register_script(ODR_ActivationHandler::SCRIPT_NAME, plugins_url('public/js/scripts.js', __FILE__), array('jquery'), ODR_VERSION_NUMBER);
-		wp_enqueue_script(ODR_ActivationHandler::SCRIPT_NAME);
+		wp_register_script(ODR_Controller::SCRIPT_NAME, plugins_url('public/js/scripts.js', __FILE__), array('jquery'), ODR_VERSION_NUMBER);
+		wp_enqueue_script(ODR_Controller::SCRIPT_NAME);
 
-		wp_register_script(ODR_ActivationHandler::READMORE_JS_LIB, plugins_url('public/js/readmore_v2.2.0.min.js', __FILE__), array(), ODR_VERSION_NUMBER);
-		wp_enqueue_script(ODR_ActivationHandler::READMORE_JS_LIB);
+		wp_register_script(ODR_Controller::READMORE_JS_LIB, plugins_url('public/js/readmore_v2.2.0.min.js', __FILE__), array(), ODR_VERSION_NUMBER);
+		wp_enqueue_script(ODR_Controller::READMORE_JS_LIB);
 	}
 
 	/**
@@ -187,12 +184,14 @@ class ODR_ActivationHandler {
 	 *
 	 * Get data from antiochian.org immediately on activation and schedule recurring retrieval.
 	 */
-	public static function on_activate() {
+	public function on_activate() {
+		$dataSyncCallback = array($this, 'sync_data');
+
 		// Fetch data from antiochian.org right now
-		ODR_Scheduler::schedule_single_data_sync();
+		$this->scheduler->schedule_single_data_sync($dataSyncCallback);
 
 		// Schedule the cron job for getting data from antiochian.org daily
-		ODR_Scheduler::schedule_recurring_data_sync();		
+		$this->scheduler->schedule_recurring_data_sync($dataSyncCallback);		
 	}
 
 	/**
@@ -200,8 +199,26 @@ class ODR_ActivationHandler {
 	 *
 	 * Unschedule recurring data retrieval from antiochian.org.
 	 */
-	public static function on_deactivate() {
-		ODR_Scheduler::unschedule_data_sync();
+	public function on_deactivate() {
+		$this->scheduler->unschedule_data_sync();
+	}
+
+	/**
+	 * Get the data from antiochian.org and store it in the Wordpress database
+	 */
+	public function sync_data() {
+		// Get data from antiochian.org
+		$data = $this->webServiceInterface->get_data();
+
+		// Store it in our database
+		$this->model->set_data($data);
+	}
+
+	/**
+	 * Get the data from the model
+	 */
+	public function get_data() {
+		return $this->model->get_data();
 	}
 }
 
@@ -220,18 +237,13 @@ class ODR_Scheduler {
 	const REFRESH_TIME_LOCAL = 'today 00:05:00'; 
 
 	/**
-	 * Add the Wordpress action hooks for the cron job callbacks
-	 */
-	public static function add_action_hooks() {
-		add_action(ODR_Scheduler::CRON_NAME, 'ODR_LocalDataStoreInterface::sync_data');
-		add_action(ODR_Scheduler::SINGLE_EVENT_NAME, 'ODR_LocalDataStoreInterface::sync_data');
-	}
-
-	/**
 	 * Schedule a recurring data retrieval to occur the NEXT time REFRESH_TIME_LOCAL occurs
 	 * and daily thereafter
 	 */
-	public static function schedule_recurring_data_sync() {
+	public function schedule_recurring_data_sync(callable $actionToPerform) {
+		// Add action hook for the cron job callback
+		add_action(ODR_Scheduler::CRON_NAME, $actionToPerform);
+
 		if (!wp_next_scheduled(ODR_Scheduler::CRON_NAME)) {	
 			$currentTimeTodayUTC = time();
 			// Convert refresh local time to UTC time based on the Wordpress 
@@ -253,7 +265,10 @@ class ODR_Scheduler {
 	/**
 	 * Schedule one antiochian.org data retrieval right now.
 	 */
-	public static function schedule_single_data_sync() {
+	public function schedule_single_data_sync(callable $actionToPerform) {
+		// Add action hook for the cron job callback
+		add_action(ODR_Scheduler::SINGLE_EVENT_NAME, $actionToPerform);
+
 		if (!wp_next_scheduled(ODR_Scheduler::CRON_NAME)) {	
 			wp_schedule_single_event(time(), ODR_Scheduler::SINGLE_EVENT_NAME);
 		}
@@ -276,12 +291,14 @@ class ODR_Scheduler {
  * Handles display of the readings via shortcode
  */
 class ODR_View {
+	private $controller;
 	/**
 	 * Constructor
 	 *
 	 * @return ODR_View the view
 	 */
-	public function __construct() {
+	public function __construct(ODR_Controller $controller) {
+		$this->controller = $controller;
 
 		// Register shortcode
 		add_shortcode('orthodox-daily-readings', array($this, 'shortcode_handler'));
@@ -306,13 +323,13 @@ class ODR_View {
     	// Render view based on which shortcode argument was passed in
     	switch (strtolower($ord_atts['content'])) {
     		case 'all':
-    			return ODR_View::get_readings_all_display();
+    			return $this->get_readings_all_display();
     		case 'date':
-    			return ODR_View::get_date_display();
+    			return $this->get_date_display();
     		case 'fasting':
-    			return ODR_View::get_fast_rule_display();
+    			return $this->get_fast_rule_display();
     		case 'readings':
-    			return ODR_View::get_readings_text_display();
+    			return $this->get_readings_text_display();
     		default:
     			return '<div class="odr_shortcode_error"><h5>Orthodox Daily Readings Plugin Error</h5> <p>[orthodox-daily-readings content="' . 
     				esc_html($ord_atts['content']) . '"] is not a valid shortcode. "' .  esc_html($ord_atts['content']) . 
@@ -327,7 +344,7 @@ class ODR_View {
 	 * @return string The rendered html content for the date
 	 */
 	public function get_date_display() {
-		$data = ODR_LocalDataStoreInterface::get_data();
+		$data = $this->controller->get_data();
 		$dateText = ucwords(strtolower(esc_html($data->get_date())));
 
 		// Strip out the year
@@ -341,7 +358,7 @@ class ODR_View {
 	 * @return string The rendered html content for the fasting rule
 	 */
 	public function get_fast_rule_display() {
-		$data = ODR_LocalDataStoreInterface::get_data();
+		$data = $this->controller->get_data();
 		return '<div class="odr_fast_rule">' . ucwords(strtolower(esc_html($data->get_fasting_text()))) . '</div>';
 	}
 
@@ -351,7 +368,7 @@ class ODR_View {
 	 * @return string The rendered html content for the full readings with titles
 	 */
 	public function get_readings_text_display() {
-		$data = ODR_LocalDataStoreInterface::get_data();
+		$data = $this->controller->get_data();
 		$out = '';
 		foreach ($data->get_readings() as $reading) {
 			$out .= '<h3 class="odr_reading_title">' . ucwords(strtolower(esc_html($reading->get_title()))) . '</h3>' .
@@ -366,25 +383,19 @@ class ODR_View {
 	 * @return string The rendered html content for all display components together
 	 */
 	public function get_readings_all_display() {
-		return ODR_View::get_date_display() . ODR_View::get_fast_rule_display() . ODR_View::get_readings_text_display();
+		return $this->get_date_display() . $this->get_fast_rule_display() . $this->get_readings_text_display();
 	}
 }
 
 /** 
  * Interfaces with the Wordpress database
  */
-class ODR_LocalDataStoreInterface {
+class ODR_Model {
 	const DATA_KEY = "odr_daily_readings_data";
 
-	/**
-	 * Get the data from antiochian.org and store it in the Wordpress database
-	 */
-	public static function sync_data() {
-		// Get data from antiochian.org
-		$data = ODR_DataSourceInterface::get_data();
-
+	public function set_data(ODR_ReadingsDataModel $value) {
 		// Store it in our database
-		update_option(ODR_LocalDataStoreInterface::DATA_KEY, $data);
+		update_option(ODR_Model::DATA_KEY, $value);
 	}
 
 	/**
@@ -392,15 +403,15 @@ class ODR_LocalDataStoreInterface {
 	 *
 	 * @return ODR_ReadingsDataModel the reading data
 	 */
-	public static function get_data() {
-		return get_option(ODR_LocalDataStoreInterface::DATA_KEY);
+	public function get_data() {
+		return get_option(ODR_Model::DATA_KEY);
 	}
 }
 
 /** 
  * Interfaces with antiochian.org to get the reading data
  */
-class ODR_DataSourceInterface {
+class ODR_WebServiceInterface {
 	const DATA_SOURCE_URL = "http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicalDaysRss";
 
 	/**
@@ -408,11 +419,11 @@ class ODR_DataSourceInterface {
 	 * 
 	 * @return ODR_ReadingsDataModel All of the reading data.
 	 */
-	public static function get_data() {
+	public function get_data() {
 		$out = new ODR_ReadingsDataModel();
 
 		// Grab the content from antiochian.org
-		$xml = new SimpleXMLElement(ODR_DataSourceInterface::get_data_from_source());
+		$xml = new SimpleXMLElement($this->get_data_from_source());
 		$item = $xml->channel->item;
 
 		// Set data model properties while sanitizing data from web service
@@ -420,7 +431,7 @@ class ODR_DataSourceInterface {
 		$out->set_fasting_text(sanitize_text_field($item->FastDesignation));
 
 		// Parse the readings tags to account for multiple readings
-		$out->set_readings(ODR_DataSourceInterface::parse_readings($item));
+		$out->set_readings($this->parse_readings($item));
 
 		return $out;
 	}
@@ -432,7 +443,7 @@ class ODR_DataSourceInterface {
 	 *
 	 * @return array of ODR_Reading objects
 	 */
-	private static function parse_readings(SimpleXMLElement $item) {
+	private function parse_readings(SimpleXMLElement $item) {
 		$out = array();
 		$reading = new ODR_Reading();
 
@@ -461,14 +472,13 @@ class ODR_DataSourceInterface {
 	 * 
 	 * @return string the XML data from antiochian.org
 	 */
-	private static function get_data_from_source() {
-		return wp_remote_retrieve_body(wp_remote_get(ODR_DataSourceInterface::DATA_SOURCE_URL));
+	private function get_data_from_source() {
+		return wp_remote_retrieve_body(wp_remote_get(ODR_WebServiceInterface::DATA_SOURCE_URL));
 	}
 }
 
-// Instantiate the activation/deactivation handler
-$activator = new ODR_ActivationHandler();
-
-// Instantiate the view
-$view = new ODR_View();
+// Instantiate the model, view, and controller
+$model = new ODR_Model();
+$controller = new ODR_Controller($model);
+$view = new ODR_View($controller);
 ?>
