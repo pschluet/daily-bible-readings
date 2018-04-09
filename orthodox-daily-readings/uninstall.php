@@ -7,5 +7,5 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 include_once 'orthodox-daily-readings.php';
 
 // Remove the plugin's data from the Wordpress options table
-delete_option(ODR_Model::DATA_KEY);
+delete_option(DBR_Model::DATA_KEY);
 ?>

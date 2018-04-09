@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Orthodox Daily Readings
+Plugin Name: Daily Bible Readings
 Plugin URI: https://github.com/pschluet/orthodox-daily-readings
 Description: This plugin allows you to post the current day's readings and fasting rule from antiochian.org on your own website.
 Author: Paul Schlueter
@@ -18,12 +18,12 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Current plugin version.
  */
-define( 'ODR_VERSION_NUMBER', '1.0.0' );
+define( 'DBR_VERSION_NUMBER', '1.0.0' );
 
 /**
  * Represents a single reading
  */
-class ODR_Reading {
+class DBR_Reading {
 	private $title;
 	private $shortText;
 	private $fullText;
@@ -86,7 +86,7 @@ class ODR_Reading {
 /**
  * Class to hold all of the readings data
  */
-class ODR_ReadingsDataModel {
+class DBR_ReadingsDataModel {
 	private $date;
 	private $readings;
 	private $fastingText;
@@ -112,7 +112,7 @@ class ODR_ReadingsDataModel {
 	/**
 	 * Get the readings.
 	 * 
-	 * @return array An array of ODR_Reading items
+	 * @return array An array of DBR_Reading items
 	 */
 	public function get_readings() {
 		return $this->readings;
@@ -121,7 +121,7 @@ class ODR_ReadingsDataModel {
 	/**
 	 * Set the bible readings.
 	 *
-	 * @param array $value An array of ODR_Reading items
+	 * @param array $value An array of DBR_Reading items
 	 */
 	public function set_readings(array $value) {
 		$this->readings = $value;
@@ -150,7 +150,7 @@ class ODR_ReadingsDataModel {
  * Handles activation/deactivation and communicating between
  * model and view
  */
-class ODR_Controller {
+class DBR_Controller {
 	const SCRIPT_NAME = 'my_javascript';
 	const READMORE_JS_LIB = 'readmore_lib';
 
@@ -163,12 +163,12 @@ class ODR_Controller {
 	 *
 	 * Register hooks and actions
 	 *
-	 * @param ODR_Model $model The "model" of the MVC paradaigm
+	 * @param DBR_Model $model The "model" of the MVC paradaigm
 	 */
-	public function __construct(ODR_Model $model) {
+	public function __construct(DBR_Model $model) {
 		$this->model = $model;
-		$this->scheduler = new ODR_Scheduler();
-		$this->webServiceInterface = new ODR_WebServiceInterface();
+		$this->scheduler = new DBR_Scheduler();
+		$this->webServiceInterface = new DBR_WebServiceInterface();
 
 		// Register activation/deactivation hooks
 		register_activation_hook(__FILE__, array($this, 'on_activate'));
@@ -186,11 +186,11 @@ class ODR_Controller {
 	 */
 	public function setup_javascript() {
 		// Register javascript scripts for dynamic expanding/contracting of reading text
-		wp_register_script(ODR_Controller::SCRIPT_NAME, plugins_url('public/js/scripts.js', __FILE__), array('jquery'), ODR_VERSION_NUMBER);
-		wp_enqueue_script(ODR_Controller::SCRIPT_NAME);
+		wp_register_script(DBR_Controller::SCRIPT_NAME, plugins_url('public/js/scripts.js', __FILE__), array('jquery'), DBR_VERSION_NUMBER);
+		wp_enqueue_script(DBR_Controller::SCRIPT_NAME);
 
-		wp_register_script(ODR_Controller::READMORE_JS_LIB, plugins_url('public/js/readmore_v2.2.0.min.js', __FILE__), array(), ODR_VERSION_NUMBER);
-		wp_enqueue_script(ODR_Controller::READMORE_JS_LIB);
+		wp_register_script(DBR_Controller::READMORE_JS_LIB, plugins_url('public/js/readmore_v2.2.0.min.js', __FILE__), array(), DBR_VERSION_NUMBER);
+		wp_enqueue_script(DBR_Controller::READMORE_JS_LIB);
 	}
 
 	/**
@@ -229,7 +229,7 @@ class ODR_Controller {
 	/**
 	 * Get readings data from the model
 	 *
-	 * @return ODR_ReadingsDataModel The readings data
+	 * @return DBR_ReadingsDataModel The readings data
 	 */
 	public function get_data() {
 		return $this->model->get_data();
@@ -240,9 +240,9 @@ class ODR_Controller {
  * Handles scheduling the data sync events in which the plugin grabs
  * data from antiochian.org and puts it in the Wordpress database
  */
-class ODR_Scheduler {
-	const CRON_NAME = 'odr_sync_data';
-	const SINGLE_EVENT_NAME = 'odr_sync_data_once';
+class DBR_Scheduler {
+	const CRON_NAME = 'dbr_sync_data';
+	const SINGLE_EVENT_NAME = 'dbr_sync_data_once';
 
 	// The local time that the data should refresh based on the Wordpress
 	// installation's currently selected time zone. Add 5 minutes so
@@ -258,8 +258,8 @@ class ODR_Scheduler {
 	public function register_data_sync_callback(callable $actionToPerform)
 	{
 		// Add hooks for cron job callbacks
-		add_action(ODR_Scheduler::CRON_NAME, $actionToPerform);
-		add_action(ODR_Scheduler::SINGLE_EVENT_NAME, $actionToPerform);
+		add_action(DBR_Scheduler::CRON_NAME, $actionToPerform);
+		add_action(DBR_Scheduler::SINGLE_EVENT_NAME, $actionToPerform);
 	}
 
 	/**
@@ -267,11 +267,11 @@ class ODR_Scheduler {
 	 * and daily thereafter
 	 */
 	public function schedule_recurring_data_sync() {
-		if (!wp_next_scheduled(ODR_Scheduler::CRON_NAME)) {	
+		if (!wp_next_scheduled(DBR_Scheduler::CRON_NAME)) {	
 			$currentTimeTodayUTC = time();
 			// Convert refresh local time to UTC time based on the Wordpress 
 			// installation's currently selected time zone.
-			$refreshTimeUTC = strtotime(ODR_Scheduler::REFRESH_TIME_LOCAL) - get_option('gmt_offset') * 60 * 60;
+			$refreshTimeUTC = strtotime(DBR_Scheduler::REFRESH_TIME_LOCAL) - get_option('gmt_offset') * 60 * 60;
 
 			// If the scheduled time is in the past, wp_schedule_event will fire immediately.
 			// We don't want that.
@@ -281,7 +281,7 @@ class ODR_Scheduler {
 
 			// Schedule a recurring retrieval for each day at midnight local time based
 			// on the Wordpress installation's currently selected time zone.
-    		wp_schedule_event($refreshTimeUTC, 'daily', ODR_Scheduler::CRON_NAME);
+    		wp_schedule_event($refreshTimeUTC, 'daily', DBR_Scheduler::CRON_NAME);
 		}
 	}
 
@@ -289,8 +289,8 @@ class ODR_Scheduler {
 	 * Schedule one antiochian.org data retrieval right now.
 	 */
 	public function schedule_single_data_sync() {
-		if (!wp_next_scheduled(ODR_Scheduler::CRON_NAME)) {	
-			wp_schedule_single_event(time(), ODR_Scheduler::SINGLE_EVENT_NAME);
+		if (!wp_next_scheduled(DBR_Scheduler::CRON_NAME)) {	
+			wp_schedule_single_event(time(), DBR_Scheduler::SINGLE_EVENT_NAME);
 		}
 	}
 
@@ -299,31 +299,31 @@ class ODR_Scheduler {
 	 */
 	public function unschedule_data_sync() {
 		// Unschedule the cron jobs
-		$timestamp = wp_next_scheduled(ODR_Scheduler::CRON_NAME);
-		wp_unschedule_event($timestamp, ODR_Scheduler::CRON_NAME);
+		$timestamp = wp_next_scheduled(DBR_Scheduler::CRON_NAME);
+		wp_unschedule_event($timestamp, DBR_Scheduler::CRON_NAME);
 
-		$timestamp = wp_next_scheduled(ODR_Scheduler::SINGLE_EVENT_NAME);
-		wp_unschedule_event($timestamp, ODR_Scheduler::SINGLE_EVENT_NAME);
+		$timestamp = wp_next_scheduled(DBR_Scheduler::SINGLE_EVENT_NAME);
+		wp_unschedule_event($timestamp, DBR_Scheduler::SINGLE_EVENT_NAME);
 	}
 }
 
 /**
  * Handles display of the readings via shortcode
  */
-class ODR_View {
+class DBR_View {
 	private $controller;
 	/**
 	 * Constructor
 	 *
-	 * @param ODR_Controller $controller The controller for this view
+	 * @param DBR_Controller $controller The controller for this view
 	 *
-	 * @return ODR_View the view
+	 * @return DBR_View the view
 	 */
-	public function __construct(ODR_Controller $controller) {
+	public function __construct(DBR_Controller $controller) {
 		$this->controller = $controller;
 
 		// Register shortcode
-		add_shortcode('orthodox-daily-readings', array($this, 'shortcode_handler'));
+		add_shortcode('daily-bible-readings', array($this, 'shortcode_handler'));
 	}
 
 	/**
@@ -353,7 +353,7 @@ class ODR_View {
     		case 'readings':
     			return $this->get_readings_text_display();
     		default:
-    			return '<div class="odr_shortcode_error"><h5>Orthodox Daily Readings Plugin Error</h5> <p>[orthodox-daily-readings content="' . 
+    			return '<div class="dbr_shortcode_error"><h5>Orthodox Daily Readings Plugin Error</h5> <p>[orthodox-daily-readings content="' . 
     				esc_html($ord_atts['content']) . '"] is not a valid shortcode. "' .  esc_html($ord_atts['content']) . 
     				'" is an invalid content argument. Acceptable values are "all", "date", "fasting", or "readings". ' .
     				'For example, the following is valid: ' . '[orthodox-daily-readings content="all"]</p></div>';
@@ -371,7 +371,7 @@ class ODR_View {
 
 		// Strip out the year
 		$tokens = explode(',', $dateText);
-		return '<h2 class="odr_date">' . $tokens[0] . $tokens[1] . '</h2>';
+		return '<h2 class="dbr_date">' . $tokens[0] . $tokens[1] . '</h2>';
 	}
 
 	/**
@@ -381,7 +381,7 @@ class ODR_View {
 	 */
 	public function get_fast_rule_display() {
 		$data = $this->controller->get_data();
-		return '<div class="odr_fast_rule">' . ucwords(strtolower(esc_html($data->get_fasting_text()))) . '</div>';
+		return '<div class="dbr_fast_rule">' . ucwords(strtolower(esc_html($data->get_fasting_text()))) . '</div>';
 	}
 
 	/**
@@ -393,8 +393,8 @@ class ODR_View {
 		$data = $this->controller->get_data();
 		$out = '';
 		foreach ($data->get_readings() as $reading) {
-			$out .= '<h3 class="odr_reading_title">' . ucwords(strtolower(esc_html($reading->get_title()))) . '</h3>' .
-			     '<p class="odr_reading_text">' . esc_html($reading->get_full_text()) . '</p>';
+			$out .= '<h3 class="dbr_reading_title">' . ucwords(strtolower(esc_html($reading->get_title()))) . '</h3>' .
+			     '<p class="dbr_reading_text">' . esc_html($reading->get_full_text()) . '</p>';
 		}
 		return $out;
 	}
@@ -412,42 +412,42 @@ class ODR_View {
 /** 
  * Interfaces with the Wordpress database
  */
-class ODR_Model {
-	const DATA_KEY = "odr_daily_readings_data";
+class DBR_Model {
+	const DATA_KEY = "dbr_daily_readings_data";
 
 	/**
 	 * Save the readings data in the database
 	 *
-	 * @param ODR_ReadingsDataModel $value The reading data
+	 * @param DBR_ReadingsDataModel $value The reading data
 	 */
-	public function set_data(ODR_ReadingsDataModel $value) {
+	public function set_data(DBR_ReadingsDataModel $value) {
 		// Store it in our database
-		update_option(ODR_Model::DATA_KEY, $value);
+		update_option(DBR_Model::DATA_KEY, $value);
 	}
 
 	/**
 	 * Retrieve the readings data from the database
 	 *
-	 * @return ODR_ReadingsDataModel the reading data
+	 * @return DBR_ReadingsDataModel the reading data
 	 */
 	public function get_data() {
-		return get_option(ODR_Model::DATA_KEY);
+		return get_option(DBR_Model::DATA_KEY);
 	}
 }
 
 /** 
  * Interfaces with antiochian.org to get the reading data
  */
-class ODR_WebServiceInterface {
+class DBR_WebServiceInterface {
 	const DATA_SOURCE_URL = "http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicalDaysRss";
 
 	/**
 	 * Get the readings data from the antiochian.org web-service
 	 * 
-	 * @return ODR_ReadingsDataModel All of the reading data.
+	 * @return DBR_ReadingsDataModel All of the reading data.
 	 */
 	public function get_data() {
-		$out = new ODR_ReadingsDataModel();
+		$out = new DBR_ReadingsDataModel();
 
 		// Grab the content from antiochian.org
 		$xml = new SimpleXMLElement($this->get_data_from_source());
@@ -468,11 +468,11 @@ class ODR_WebServiceInterface {
 	 *
 	 * @param SimpleXMLElement $xml the XML "item" tag data from antiochian.org
 	 *
-	 * @return array of ODR_Reading objects
+	 * @return array of DBR_Reading objects
 	 */
 	private function parse_readings(SimpleXMLElement $item) {
 		$out = array();
-		$reading = new ODR_Reading();
+		$reading = new DBR_Reading();
 
 		// Set data model properties and sanitize data from web service
 		foreach ($item->children() as $tag) {
@@ -500,12 +500,12 @@ class ODR_WebServiceInterface {
 	 * @return string the XML data from antiochian.org
 	 */
 	private function get_data_from_source() {
-		return wp_remote_retrieve_body(wp_remote_get(ODR_WebServiceInterface::DATA_SOURCE_URL));
+		return wp_remote_retrieve_body(wp_remote_get(DBR_WebServiceInterface::DATA_SOURCE_URL));
 	}
 }
 
 // Instantiate the model, view, and controller
-$model = new ODR_Model();
-$controller = new ODR_Controller($model);
-$view = new ODR_View($controller);
+$model = new DBR_Model();
+$controller = new DBR_Controller($model);
+$view = new DBR_View($controller);
 ?>
