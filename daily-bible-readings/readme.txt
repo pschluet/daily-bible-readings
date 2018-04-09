@@ -63,6 +63,14 @@ Yes! This is an open-source project hosted on GitHub [here](https://github.com/p
 4. Only Date and Fasting Rule
 
 == Changelog ==
+= 1.0.1 =
+#### Bug Fixes
+* Corrected plugin URI
+
+#### Enhancements
+* Added change log (CHANGELOG.md)
+* Split up classes into different files
+
 = 1.0.0 =
 Initial Release
 
