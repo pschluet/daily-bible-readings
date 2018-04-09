@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Daily Bible Readings
-Plugin URI: https://github.com/pschluet/orthodox-daily-readings
+Plugin URI: https://github.com/pschluet/daily-bible-readings
 Description: This plugin allows you to post the current day's readings and fasting rule from antiochian.org on your own website.
 Author: Paul Schlueter
 Version: 1.0.0
