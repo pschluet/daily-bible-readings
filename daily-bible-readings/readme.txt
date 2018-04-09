@@ -1,6 +1,6 @@
-=== Orthodox Daily Readings ===
+=== Daily Bible Readings ===
 Contributors: paulschlueter
-Tags: orthodox, bible, scripture, lectionary, gospel, epistle, fasting
+Tags: orthodox, bible, scripture, lectionary, gospel, epistle, fasting, orthodox, antiochian
 Donate link: paypal.me/PaulSchlueter
 Requires at least: 4.9.5
 Tested up to: 4.9
@@ -14,7 +14,7 @@ Show the current day\'s scripture readings and fasting rule from antiochian.org 
 == Description ==
 To show the daily readings and fasting rule, you simply paste the following shortcode on whatever page you want to display them. The plugin automatically gets new content from antiochian.org once a day so it is always up to date.
 ```
-[orthodox-daily-readings content=\"all\"]
+[daily-bible-readings content=\"all\"]
 ```
 [Click here](http://allsaintsorthodox.org/daily-readings/) to see a live demo.
 
@@ -27,21 +27,21 @@ attribute in the shortcode. The allowable arguments are:
 
 For instance, if you want to only show the date and the fasting rule, you can put the following two shortcodes on your page:
 ```
-[orthodox-daily-readings content=\"date\"]
-[orthodox-daily-readings content=\"fasting\"]
+[daily-bible-readings content=\"date\"]
+[daily-bible-readings content=\"fasting\"]
 ```
 
 Initially, the readings only show short snippets of the reading text. Clicking "Read More" dynamically reveals the rest of the text without loading a new page.
 
 == Installation ==
-Upload the \"orthodox-daily-readings\" folder to your Wordpress plugins directory located at 
+Upload the \"daily-bible-readings\" folder to your Wordpress plugins directory located at 
 ```
 your_wordpress_root_install_directory/wp-content/plugins
 ```
 Next you need to activate the plugin as follows:
 1. Open your Wordpress dashboard.
 2. Click on \"Plugins\" in the dashboard sidebar.
-3. Click the \"Activate\" link under the \"Orthodox Daily Readings\" plugin title.
+3. Click the \"Activate\" link under the \"Daily Bible Readings\" plugin title.
 
 == Frequently Asked Questions ==
 = Why Am I Seeing Readings for the Wrong Date? =
@@ -50,11 +50,11 @@ Make sure your timezone is set correctly in your Wordpress settings. The plugin 
 
 = Where Can I Submit Bugs or Feature Requests? =
 
-You can tell the author about bugs or feature requests [here](https://github.com/pschluet/orthodox-daily-readings/issues/new).
+You can tell the author about bugs or feature requests [here](https://github.com/pschluet/daily-bible-readings/issues/new).
 
 = Can I See The Code? =
 
-Yes! This is an open-source project hosted on GitHub [here](https://github.com/pschluet/orthodox-daily-readings).
+Yes! This is an open-source project hosted on GitHub [here](https://github.com/pschluet/daily-bible-readings).
 
 == Screenshots ==
 1. Example Display with All Content
