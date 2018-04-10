@@ -65,7 +65,7 @@ class DBR_Controller {
 		require_once 'includes/class-dbr-readings-data-model.php';
 		require_once 'includes/class-dbr-scheduler.php';
 		require_once 'includes/interface-dbr-iWebServiceDataSource.php';
-		require_once 'includes/class-dbr-webservice-interface.php';		
+		require_once 'includes/class-dbr-antiochian-webservice.php';		
 	}
 
 	/**
