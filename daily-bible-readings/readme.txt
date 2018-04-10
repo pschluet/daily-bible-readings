@@ -67,6 +67,12 @@ Yes! This is an open-source project hosted on GitHub [here](https://github.com/p
 4. Only Date and Fasting Rule
 
 == Changelog ==
+= 1.0.2 =
+Added explicit reference to 3rd party API in readme.
+
+#### Bug Fixes
+* Fixed [bug](https://github.com/pschluet/daily-bible-readings/issues/16) where the readings might not update when the date changes
+
 = 1.0.1 =
 #### Bug Fixes
 * Corrected plugin URI
@@ -79,5 +85,8 @@ Yes! This is an open-source project hosted on GitHub [here](https://github.com/p
 Initial Release
 
 == Upgrade Notice ==
+= 1.0.2 =
+This version fixes a bug where the readings might not update when the date changes.
+
 = 1.0.0 =
 Initial Release
