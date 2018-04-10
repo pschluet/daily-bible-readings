@@ -9,10 +9,10 @@ Stable tag: trunk
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Show the current day\'s scripture readings and fasting rule from antiochian.org on your own website.
+Show the current day\'s scripture readings and fasting rule from the Antiochian Orthodox Christian Archdiocese of North America on your own website.
 
 == Description ==
-To show the daily readings and fasting rule, you simply paste the following shortcode on whatever page you want to display them. The plugin automatically gets new content from antiochian.org once a day so it is always up to date.
+This plugin shows the current day\'s scripture readings and fasting rule from the Antiochian Orthodox Christian Archdiocese of North America. To show the daily readings and fasting rule, you simply paste the following shortcode on whatever page you want to display the content. The plugin automatically retrieves new content from the Antiochian Archdiocese once a day so it is always up to date.
 ```
 [daily-bible-readings content=\"all\"]
 ```
@@ -32,6 +32,10 @@ For instance, if you want to only show the date and the fasting rule, you can pu
 ```
 
 Initially, the readings only show short snippets of the reading text. Clicking "Read More" dynamically reveals the rest of the text without loading a new page.
+
+Note: this plugin relies on the following 3rd party web services from the Antiochian Archdiocese:
+* [http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveEnabledDates](http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveEnabledDates)
+* [http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicDayByItemId?itemId=0](http://antiochian-api-prod-wa.azurewebsites.net/api/data/RetrieveLiturgicDayByItemId?itemId=0)
 
 == Installation ==
 Upload the \"daily-bible-readings\" folder to your Wordpress plugins directory located at 
