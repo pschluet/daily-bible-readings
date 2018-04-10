@@ -42,7 +42,7 @@ class DBR_Controller {
 	public function __construct(DBR_Model $model) {
 		$this->model = $model;
 		$this->scheduler = new DBR_Scheduler();
-		$this->webServiceInterface = new DBR_WebServiceInterface();
+		$this->webServiceInterface = new DBR_AntiochianWebService();
 
 		// Register activation/deactivation hooks
 		register_activation_hook(__FILE__, array($this, 'on_activate'));
@@ -64,7 +64,8 @@ class DBR_Controller {
 		require_once 'includes/class-dbr-reading.php';
 		require_once 'includes/class-dbr-readings-data-model.php';
 		require_once 'includes/class-dbr-scheduler.php';
-		require_once 'includes/class-dbr-webservice-interface.php';
+		require_once 'includes/interface-dbr-iWebServiceDataSource.php';
+		require_once 'includes/class-dbr-webservice-interface.php';		
 	}
 
 	/**
@@ -106,7 +107,8 @@ class DBR_Controller {
 	 */
 	public function sync_data() {
 		// Get data from antiochian.org
-		$data = $this->webServiceInterface->get_data();
+		$currentLocalTime = new DateTime(current_time('Y-m-d'));
+		$data = $this->webServiceInterface->get_data_for_date($currentLocalTime);
 
 		// Store it in our database
 		$this->model->set_data($data);
