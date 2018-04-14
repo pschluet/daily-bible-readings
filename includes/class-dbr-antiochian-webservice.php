@@ -24,7 +24,8 @@ class DBR_AntiochianWebService implements DBR_iWebServiceDataSource {
 		$liturgicalDay = $data['LiturgicalDay'];
 
 		// Set data model properties while sanitizing data from web service
-		$out->set_date(sanitize_text_field($liturgicalDay['CalendarDateLong']));
+		$readingDate = DateTime::createFromFormat('Y-m-d', sanitize_text_field($liturgicalDay['OriginalCalendarDate']));
+		$out->set_date($readingDate);
 		$out->set_fasting_text(sanitize_text_field($liturgicalDay['FastDesignation']));
 
 		// Parse the readings tags to account for multiple readings

@@ -59,11 +59,9 @@ class DBR_View {
 	 */
 	public function get_date_display() {
 		$data = $this->controller->get_data();
-		$dateText = ucwords(strtolower(esc_html($data->get_date())));
 
-		// Strip out the year
-		$tokens = explode(',', $dateText);
-		return '<h2 class="dbr_date">' . $tokens[0] . $tokens[1] . '</h2>';
+		// Create the HTML
+		return '<h2 class="dbr_date">' . $data->get_date()->format("l F j") . '</h2>';
 	}
 
 	/**

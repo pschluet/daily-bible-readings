@@ -10,7 +10,7 @@ class DBR_ReadingsDataModel {
 	/**
 	 * Get the date of the readings.
 	 * 
-	 * @return string The date of the readings
+	 * @return DateTime The date of the readings
 	 */
 	public function get_date() {
 		return $this->date;
@@ -19,9 +19,9 @@ class DBR_ReadingsDataModel {
 	/**
 	 * Set the date of the readings.
 	 *
-	 * @param string $value The date of the readings
+	 * @param DateTime $value The date of the readings
 	 */
-	public function set_date(string $value) {
+	public function set_date(DateTime $value) {
 		$this->date = $value;
 	}
 
