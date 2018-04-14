@@ -4,7 +4,7 @@
  *
  * Tests related to interacting with the Wordpress database.
  */
-class DBR_Model_Test extends WP_UnitTestCase {
+class DBR_ModelTest extends WP_UnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
@@ -17,7 +17,7 @@ class DBR_Model_Test extends WP_UnitTestCase {
 	/**
 	 * Add data to the database and make sure we can read it back
 	 */
-	function test_set_and_get_model_data() {
+	public function test_set_and_get_model_data() {
 		$inputData = "my_data";
 
 		$readingData = new DBR_ReadingsDataModel();
