@@ -45,10 +45,10 @@ class DBR_View {
     		case 'readings':
     			return $this->get_readings_text_display();
     		default:
-    			return '<div class="dbr_shortcode_error"><h5>Orthodox Daily Readings Plugin Error</h5> <p>[orthodox-daily-readings content="' . 
+    			return '<div class="dbr_shortcode_error"><h5>Daily Bible Readings Plugin Error</h5> <p>[daily-bible-readings content="' . 
     				esc_html($ord_atts['content']) . '"] is not a valid shortcode. "' .  esc_html($ord_atts['content']) . 
     				'" is an invalid content argument. Acceptable values are "all", "date", "fasting", or "readings". ' .
-    				'For example, the following is valid: ' . '[orthodox-daily-readings content="all"]</p></div>';
+    				'For example, the following is valid: ' . '[daily-bible-readings content="all"]</p></div>';
     	}
 	}
 
