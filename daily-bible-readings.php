@@ -65,7 +65,8 @@ class DBR_Controller {
 		require_once 'includes/class-dbr-readings-data-model.php';
 		require_once 'includes/class-dbr-scheduler.php';
 		require_once 'includes/interface-dbr-iWebServiceDataSource.php';
-		require_once 'includes/class-dbr-antiochian-webservice.php';		
+		require_once 'includes/class-dbr-antiochian-webservice.php';	
+		require_once 'includes/class-dbr-admin-view.php';
 	}
 
 	/**
@@ -125,6 +126,8 @@ class DBR_Controller {
 }
 
 DBR_Controller::load_dependencies();
+
+$adminView = new DBR_Admin_View();
 
 // Instantiate the model, view, and controller
 $model = new DBR_Model();
