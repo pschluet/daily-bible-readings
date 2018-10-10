@@ -1,5 +1,5 @@
 # daily-bible-readings [![Build Status](https://travis-ci.org/pschluet/daily-bible-readings.svg?branch=master)](https://travis-ci.org/pschluet/daily-bible-readings)
-A Wordpress plugin to post the current day's readings and fasting rule from antiochian.org on your own website.
+A Wordpress plugin to post the current day's readings and fasting rule from antiochian.org on your own website. You can also find this plugin on its [Official Wordpress Plugin Page](https://wordpress.org/plugins/daily-bible-readings/).
 
 ## Installation
 First you must put the plugin's files in the appropriate folder in your Wordpress installation.
