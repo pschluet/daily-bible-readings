@@ -1,3 +1,7 @@
+## Version 1.0.3
+#### Bug Fixes
+- Fixed bug where the "Read more" functionality wasn't working
+
 ## Version 1.0.2
 #### Bug Fixes
 - Fixed bug where the readings might not reflect the correct day, #16

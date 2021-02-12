@@ -3,9 +3,9 @@ Contributors: paulschlueter
 Tags: orthodox, bible, scripture, lectionary, gospel, epistle, fasting, orthodox, antiochian
 Donate link: paypal.me/PaulSchlueter
 Requires at least: 4.9.5
-Tested up to: 4.9
+Tested up to: 5.6
 Requires PHP: 7.0.20
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,6 +68,10 @@ Yes! This is an open-source project hosted on GitHub [here](https://github.com/p
 4. Only Date and Fasting Rule
 
 == Changelog ==
+= 1.0.3 =
+#### Bug Fixes
+* Fixed bug where the "Read more" functionality wasn't working
+
 = 1.0.2 =
 Added explicit reference to 3rd party API in readme.
 
@@ -86,6 +90,9 @@ Added explicit reference to 3rd party API in readme.
 Initial Release
 
 == Upgrade Notice ==
+= 1.0.3 =
+This version fixes a bug where the "Read more" functionality wasn't working.
+
 = 1.0.2 =
 This version fixes a bug where the readings might not update when the date changes.
 
